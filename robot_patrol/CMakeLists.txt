@@ -29,7 +29,7 @@ ament_target_dependencies(patrol rclcpp sensor_msgs geometry_msgs)
 install(TARGETS patrol
   DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch config
+install(DIRECTORY launch config image
   DESTINATION share/${PROJECT_NAME})
 
 ament_package()
