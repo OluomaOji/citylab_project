@@ -61,7 +61,7 @@ private:
 
         float min_dist_front = std::numeric_limits<float>::infinity(); // initialise to infinity. valid distance will be smaller than infinity.
         float best_dist = -1.0f;
-        float best_angel = 0.0;
+        float best_angle = 0.0;
 
         for (size_t i = 0; i < scan.ranges.size(); ++i) {
             // laser measurement = r = scan.ranges[i]
@@ -90,7 +90,7 @@ private:
             // find the safest direction
             if (r > best_dist) {
                 best_dist = r;
-                best_angel = angle;
+                best_angle = angle;
             }
 
         }
@@ -98,7 +98,7 @@ private:
         if (min_dist_front < obstacle_dist) {
             // obstacle decision: slow ahead and turn toward direction}
             cmd.linear.x = 0.05; 
-            cmd.angular.z = (best_angel >= 0.0) ? 0.5 : -0.5;  // + left , - right
+            cmd.angular.z = (best_angle >= 0.0) ? 0.5 : -0.5;  // + left, - right
         } else {
             cmd.linear.x = 0.1;
             cmd.angular.z = 0.0;
