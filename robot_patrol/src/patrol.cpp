@@ -23,14 +23,22 @@ public:
     Patrol() : Node("patrol_node") {
         // create the subsciber
         // auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
+        // Parameters
+        this->declare_parameter("obstacle_distance", 0.35);
+        this->declare_parameter("linear_speed", 0.1);
+        this->declare_parameter("turn_speed",0.5);
+        obstacle_dist_ = this->get_parameter("obstacle_distance").as_double();
+        linear_speed_ = this->get_parameter("linear_speed").as_double();
+        turn_speed_ = this->get_parameter("turn_speed").as_double();
+
         scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/fastbot_1/scan",
+            "/scan",
             rclcpp::SensorDataQoS(),
             std::bind(&Patrol::scan_callback, this, std::placeholders::_1));
 
         // create the publisher
         cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
-            "/fastbot_1/cmd_vel", 
+            "/cmd_vel", 
             10);
 
         timer_ = this->create_wall_timer(
@@ -57,7 +65,6 @@ private:
         const auto &scan = *last_scan_;
         const double half_pi = M_PI / 2.0;
         const double front_view = 20.0 * M_PI / 180.0; // +/- 20 deg
-        const double obstacle_dist = 0.35;
 
         float min_dist_front = std::numeric_limits<float>::infinity(); // initialise to infinity. valid distance will be smaller than infinity.
         float best_dist = -1.0f;
@@ -95,10 +102,10 @@ private:
 
         }
         geometry_msgs::msg::Twist cmd;
-        if (min_dist_front < obstacle_dist) {
+        if (min_dist_front < obstacle_dist_) {
             // obstacle decision: slow ahead and turn toward direction}
-            cmd.linear.x = 0.05; 
-            cmd.angular.z = (best_angle >= 0.0) ? 0.5 : -0.5;  // + left, - right
+            cmd.linear.x = linear_speed_/ 2.0; 
+            cmd.angular.z = (best_angle >= 0.0) ? turn_speed_ : -turn_speed_;  // + left, - right
         } else {
             cmd.linear.x = 0.1;
             cmd.angular.z = 0.0;
@@ -111,6 +118,10 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
     sensor_msgs::msg::LaserScan::SharedPtr last_scan_;
+
+    double obstacle_dist_;
+    double linear_speed_;
+    double turn_speed_;
 
 };
 
